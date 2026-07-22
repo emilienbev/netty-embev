@@ -7,6 +7,19 @@ BINARIES=("native-image-http-server" "native-image-quic-server" "native-image-qu
 PIDS=()
 FAIL=0
 
+# native-image-openssl is a short-lived program (it builds client/server OPENSSL SslContexts and exits),
+# so it is run in the foreground and its exit status is asserted directly. See #11088.
+OPENSSL_BIN="native-image-openssl"
+if [[ ! -x "${BIN_DIR}/${OPENSSL_BIN}" ]]; then
+  echo "Error: ${OPENSSL_BIN} not found or not executable in ${BIN_DIR}"
+  exit 1
+fi
+echo "Running ${OPENSSL_BIN}..."
+if ! "${BIN_DIR}/${OPENSSL_BIN}"; then
+  echo "Error: ${OPENSSL_BIN} exited with non-zero status."
+  exit 1
+fi
+
 for BIN in "${BINARIES[@]}"; do
   if [[ ! -x "${BIN_DIR}/${BIN}" ]]; then
     echo "Error: ${BIN} not found or not executable in ${BIN_DIR}"
